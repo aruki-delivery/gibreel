@@ -14,6 +14,8 @@ defmodule GibReel.Mixfile do
 
   defp deps(_) do
     [{:columbo, "~> 0.1.0"},
+     {:cclock, "~> 0.1.0"},
+     {:async, "~> 0.1.0"},
       {:ex_doc, ">= 0.0.0", only: :dev}]
   end
 
