@@ -18,7 +18,7 @@
 
 -behaviour(gen_server).
 
--include("gibreel.hrl").
+-include("../include/gibreel.hrl").
 -include("gibreel_db.hrl").
 -include("g_storage.hrl").
 
