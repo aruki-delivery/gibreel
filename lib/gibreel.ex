@@ -4,6 +4,8 @@ defmodule Gibreel do
     use GenServer
     require Logger
 
+    alias Gibreel.Db, as: Db
+
     defmodule CacheConfig do
       @fields [
         max_age: 0, #no max age
@@ -34,7 +36,7 @@ defmodule Gibreel do
 
     def start_link(default) do
       Logger.info("#{__MODULE__}.start_link(#{inspect default})")
-      :gibreel_db.create()
+      Gibreel.Db.create()
       GenServer.start_link(__MODULE__, default)
     end
 
@@ -79,10 +81,10 @@ defmodule Gibreel do
     end
 
     def delete_cache(cacheName), do: GenServer.cast(__MODULE__, {:delete_cache, cacheName})
-    def list_caches(), do: :gibreel_db.list_caches()
+    def list_caches(), do: Db.list_caches()
     
     def cache_config(cacheName) do
-        case :gibreel_db.find(cacheName) do
+        case Db.find(cacheName) do
             {:ok, cache_record} ->
                 [
                     {:max_age,            cache_record[:config][:cache_config].max_age},
@@ -97,9 +99,9 @@ defmodule Gibreel do
     end
 
     def handle_call({:create_cache, cacheName, cacheConfig}, _From, state=%State{pids: pids}) do
-	    case :gibreel_db.find(cacheName) do
+	    case Db.find(cacheName) do
             {:error, :no_cache} ->
-                :gibreel_db.store(%CacheRecord{name: cacheName, config: cacheConfig})
+                Db.store(%CacheRecord{name: cacheName, config: cacheConfig})
                 {:ok, pid} = :g_cache_sup.start_cache(cacheName)
                 :erlang.monitor(:process, pid)
                 nPids = :dict.store(pid, cacheName, pids)
@@ -113,7 +115,7 @@ defmodule Gibreel do
 		    :undefined -> {:noreply, state}
 		    pid -> 
 			    send(pid,{:stop_cache})
-			    :gibreel_db.delete(cacheName)
+			    Db.delete(cacheName)
 			    nPids = :dict.erase(pid, pids)
                 {:noreply, %State{pids: nPids}}
         end
@@ -123,7 +125,7 @@ defmodule Gibreel do
         case :dict.find(pid, pids) do
             :error -> {:noreply, state}
             {:ok, cacheName} ->
-                :gibreel_db.delete(cacheName)
+                Db.delete(cacheName)
                 dPids = :dict.erase(pid, pids)
                 {:noreply, %State{pids: dPids}}
         end
@@ -142,7 +144,7 @@ defmodule Gibreel do
 
 
     def terminate(_Reason, _State) do
-        :gibreel_db.drop()
+        Db.drop()
         :ok
     end
 	
