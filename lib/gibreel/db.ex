@@ -1,7 +1,17 @@
 defmodule Gibreel.Db do
+    require Logger
+
     def create() do
-        options = [:set, :public, :named_table, {:keypos, 2}, {:read_concurrency, true}]
-        :ets.new(:gibreel, options)
+        check = :ets.info(:gibreel)
+        Logger.info("#{__MODULE__}.create() check return = #{inspect check}")
+        if :undefined == check do
+          options = [:set, :public, :named_table, {:keypos, 2}, {:read_concurrency, true}]
+          :ets.new(:gibreel, options)
+          true = :ets.insert_new(:gibreel, {"__init___", :ok})
+        else
+          :ok = :ets.lookup(:gibreel, "__init___")
+          Logger.info("#{__MODULE__}.create: skipping new ets")
+        end
     end
 
     def drop(), do: :ets.delete(:gibreel)
