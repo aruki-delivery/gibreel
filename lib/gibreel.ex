@@ -106,11 +106,14 @@ defmodule Gibreel do
 
     @doc "Checks if the task has already executed"
     def executed?(task, project) do
+      Logger.info("#{__MODULE__}.executed?(#{inspect task}, #{inspect project})")
       item = {task, project}
       agent = Gibreel.Registry.get(__MODULE__)
       state = Agent.get_and_update(agent, fn set ->
         item in set
       end)
+      Logger.info("#{__MODULE__}.executed?(#{inspect task}, #{inspect project}=#{inspect state}")
+      state
     end
 
     #defp loop(state = %State{pids: pids}) do
