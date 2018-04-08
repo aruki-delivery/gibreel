@@ -3,7 +3,7 @@ defmodule Gibreel.Mixfile do
 
   def project do
     [app: :gibreel,
-      version: "2.0.2",
+      version: "3.0.0",
       deps: deps(Mix.env()),
       description: "Distributed cache implemented in Elixir / Erlang",
       package: package(),
