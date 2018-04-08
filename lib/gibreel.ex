@@ -1,7 +1,7 @@
 defmodule Gibreel do
     @moduledoc false
 
-    use GenServer
+    use Agent, restart: :permanent
     require Logger
 
     alias Gibreel.Db, as: Db
@@ -93,31 +93,26 @@ defmodule Gibreel do
     ########
     #Supervisor / OTP
     ########
-    defp new_state, do: %State{pids: :dict.new()}
-    defp new_loop, do: loop(new_state())
-    def start_link(default) do
-      Logger.info("#{__MODULE__}.start_link(#{inspect default})")
-      Logger.info("#{__MODULE__}.calling Db.create()...")
+    def new_state, do: %State{pids: :dict.new()}
+    def start_link([]) do
+      Logger.info("#{__MODULE__}.start_link([])")
       Db.create()
-      Logger.info("#{__MODULE__}.calling Task.start_link(#{inspect new_loop()})...")
-      Task.start_link(new_loop())
+      Agent.start_link(&new_state/0, name: __MODULE__)
     end
 
-    def init(default) do
-      Logger.info("#{__MODULE__}.init(#{inspect default})")
-      {:ok, new_state()}
+    @doc "Checks if the task has already executed"
+    def executed?(task, project) do
+      item = {task, project}
+      Agent.get(__MODULE__, fn set ->
+        item in set
+      end)
     end
 
-    defp loop(state = %State{pids: pids}) do
-        Logger.info("#{__MODULE__}.loop(#{inspect state})")
-        receive do
-          {:get, pid, caller} ->
-            send caller, :dict.find(pid, pids)
-            loop(state)
-          {:put, pid, value} -> loop(:dict.store(pid, value, pids))
-        end
-      end
-    
+    #defp loop(state = %State{pids: pids}) do
+    #  Logger.info("#{__MODULE__}.loop(#{inspect state}, pids=#{inspect pids})")
+    #  Logger.info("looping state")
+    #  send self(), state
+    #end
 
     def handle_call({:create_cache, cacheName, cacheConfig}, _From, state=%State{pids: pids}) do
 	    case Db.find(cacheName) do
@@ -163,6 +158,9 @@ defmodule Gibreel do
         end
     end
 
+    def handle_info(wat = {msg, _MonitorRef, process: pid}, state=%State{pids: pids}) do
+      Logger.info("#{__MODULE__} msg #{inspect wat}, #{msg}, #{inspect pid} #{inspect state}, pids=#{pids}")
+    end
 
     def terminate(_Reason, _State) do
         Db.drop()
