@@ -113,7 +113,7 @@ defmodule Gibreel do
           {:get, pid, caller} ->
             send caller, :dict.find(pid, pids)
             loop(state)
-          {:put, pid, value} -> loop(:dict.put(pids, pid, value))
+          {:put, pid, value} -> loop(:dict.store(pid, value, pids))
         end
       end
     
