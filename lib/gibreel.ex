@@ -114,7 +114,7 @@ defmodule Gibreel do
     #  send self(), state
     #end
 
-    def handle_call({:create_cache, cacheName, cacheConfig}, _From, state=%State{pids: pids}) do
+    def handle_call({:create_cache, cacheName, cacheConfig}, _from, state=%State{pids: pids}) do
 	    case Db.find(cacheName) do
             {:error, :no_cache} ->
                 Db.store(%CacheRecord{name: cacheName, config: cacheConfig})
