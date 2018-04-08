@@ -6,6 +6,9 @@ defmodule Gibreel do
 
     alias Gibreel.Db, as: Db
 
+    #######
+    #Records
+    #######
     defmodule CacheConfig do
       @fields [
         max_age: 0, #no max age
@@ -18,7 +21,6 @@ defmodule Gibreel do
       def fields, do: @fields
       defstruct @fields
     end
-
 
     defmodule CacheRecord do
       @fields [name: "none", config: %CacheConfig{}]
@@ -34,10 +36,9 @@ defmodule Gibreel do
       defstruct @fields
     end
 
+    #######
     ### Functionality
-
-    
-
+    #######
     def create_cache(cacheName), do: create_cache(cacheName, [])
     def create_cache(cacheName, options) do
         case create_cache_config(options) do
