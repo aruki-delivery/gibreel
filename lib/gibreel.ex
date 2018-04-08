@@ -93,17 +93,22 @@ defmodule Gibreel do
     ########
     #Supervisor / OTP
     ########
-    def new_state, do: %State{pids: :dict.new()}
     def start_link([]) do
       Logger.info("#{__MODULE__}.start_link([])")
       Db.create()
-      Agent.start_link(&new_state/0, name: __MODULE__)
+      Logger.info("#{__MODULE__}.start_link([]) created db")
+      res = Agent.start_link(fn -> Gibreel.Registry.start_process(__MODULE__) end)
+      Logger.info("#{__MODULE__}.start_link([]) started Agent for Gibreel.Registry.start_process(#{__MODULE__})")
+      #res = Gibreel.Registry.start_process(Gibreel.Registry)
+      Logger.info("#{__MODULE__}.start_link([]) started registry #{inspect res}")
+      res
     end
 
     @doc "Checks if the task has already executed"
     def executed?(task, project) do
       item = {task, project}
-      Agent.get(__MODULE__, fn set ->
+      agent = Gibreel.Registry.get(__MODULE__)
+      state = Agent.get_and_update(agent, fn set ->
         item in set
       end)
     end
