@@ -126,6 +126,11 @@ defmodule Gibreel do
         end
     end
 
+    def handle_call(msg, from, state) do
+      Logger.info("#{__MODULE__}.handle_call: unknown call: #{inspect msg} from=#{inspect from} and state=#{inspect(state)}")
+      {:reply, :unknown_call, state}
+    end
+
     def handle_cast({:delete_cache, cacheName}, state=%State{pids: pids}) do
 	    case Process.whereis(cacheName) do
 		    :undefined -> {:noreply, state}
