@@ -3,8 +3,10 @@ defmodule Gibreel.Mixfile do
 
   def project do
     [app: :gibreel,
-      version: "3.0.4",
+      version: "3.0.5",
       deps: deps(Mix.env()),
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [coveralls: :test],
       description: "Distributed cache implemented in Elixir / Erlang",
       package: package(),
       source_url: "https://github.com/aruki-delivery/gibreel",
@@ -12,10 +14,12 @@ defmodule Gibreel.Mixfile do
   end
 
   defp deps(_) do
-    [{:columbo, "~> 0.1.0"},
+    [{:swarm, "~> 3.0"},
+     {:columbo, "~> 0.1.0"},
      {:cclock, "~> 0.1.0"},
      {:async, "~> 0.1.0"},
-      {:ex_doc, ">= 0.0.0", only: :dev}]
+     {:excoveralls, "~> 0.8", only: :test},
+     {:ex_doc, ">= 0.0.0", only: :dev}]
   end
   def application do
     [mod: {Gibreel.Application, []},
