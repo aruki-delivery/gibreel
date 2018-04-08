@@ -98,7 +98,7 @@ defmodule Gibreel do
       Db.create()
       Logger.info("#{__MODULE__}.start_link([]) created db")
       res = Agent.start_link(fn -> Gibreel.Registry.start_process(__MODULE__) end)
-      Logger.info("#{__MODULE__}.start_link([]) started Agent for Gibreel.Registry.start_process(#{__MODULE__})")
+      Logger.info("#{__MODULE__}.start_link([]) started Agent for Gibreel.Registry.start_process(#{__MODULE__})=#{inspect res}")
       res = Agent.start_link(fn -> Gibreel.Registry.start_process(Gibreel.Registry) end)
       Logger.info("#{__MODULE__}.start_link([]) started registry #{inspect res}")
       res
