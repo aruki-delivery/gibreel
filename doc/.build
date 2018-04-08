@@ -4,11 +4,12 @@ fonts/icomoon.eot
 fonts/icomoon.svg
 fonts/icomoon.ttf
 fonts/icomoon.woff
-dist/sidebar_items-927b2f7f2b.js
+dist/sidebar_items-1d25b27284.js
 api-reference.html
 search.html
 404.html
 Gibreel.CacheConfig.html
 Gibreel.CacheRecord.html
+Gibreel.Db.html
 Gibreel.State.html
 index.html
