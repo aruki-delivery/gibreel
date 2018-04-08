@@ -3,16 +3,16 @@ defmodule Gibreel.Db do
 
     def create() do
         check = :ets.info(:gibreel)
-        Logger.info("#{__MODULE__}.create() check return = #{inspect check}")
+        #Logger.info("#{__MODULE__}.create() check return = #{inspect check}")
         if :undefined == check do
           options = [:set, :public, :named_table, {:keypos, 2}, {:read_concurrency, true}]
           :ets.new(:gibreel, options)
           true = :ets.insert_new(:gibreel, {"__init___", :ok})
           :ok
         else
-          Logger.info("#{__MODULE__}.create() check return is not undefined")
-          res = :ets.lookup(:gibreel, "__init___")
-          Logger.info("#{__MODULE__}.create: skipping new ets with res=#{inspect res}")
+          #Logger.info("#{__MODULE__}.create() check return is not undefined")
+          [] = :ets.lookup(:gibreel, "__init___")
+          #Logger.info("#{__MODULE__}.create: skipping new ets with res=[]]")
           :ok
         end
     end

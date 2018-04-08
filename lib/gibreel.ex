@@ -36,14 +36,53 @@ defmodule Gibreel do
       defstruct @fields
     end
 
+    def empty_state(), do: %State{pids: :dict.new()}
+
     #######
     ### Functionality
     #######
-    def create_cache(cacheName), do: create_cache(cacheName, [])
+    def create(pid, cacheName) do
+        Logger.info("#{__MODULE__}.create(#{inspect pid}, #{cacheName})...")
+        pid |>
+          Agent.get_and_update(fn (state) ->
+            #Logger.info("got state for cacheName=#{cacheName} #{inspect state}")
+            case state do
+              %Gibreel.State{pids: []} ->
+                #Logger.info("cacheName=#{cacheName} got empty state")
+                {empty_state(), empty_state()}
+              non_empty = %Gibreel.State{} ->
+                #Logger.info("cacheName=#{cacheName} got non-empty state")
+                {non_empty, non_empty}
+              pid when is_pid(pid) ->
+                  if Process.alive?(pid) do
+                    #Logger.info("cacheName=#{cacheName} got pid #{inspect pid} for alive proc")
+                    {state, Agent.get(pid, fn s -> s end)}
+                  else
+                    #Logger.warn("cacheName=#{cacheName} got pid #{inspect pid} for dead proc")
+                    state = Gibreel.Registry.start(cacheName)
+                    {:ok, pid} = Gibreel.start()
+                    {state, Agent.get(pid, fn (s) -> {s, state} end)}
+                  end
+            end
+          end)
+    end
+    
+    def create_cache(cacheName) do
+      Logger.info("#{__MODULE__}.create_cache(#{cacheName})")
+      create_cache(cacheName, [])
+    end
     def create_cache(cacheName, options) do
+        Logger.info("#{__MODULE__}.create_cache(#{cacheName}, #{inspect options})")
         case create_cache_config(options) do
-            {:ok, config} -> GenServer.call(__MODULE__, {:create_cache, cacheName, config})
-            {:error, reason} -> {:error, reason}
+            {:ok, config} ->
+              #Logger.info("Calling GenServer for (#{cacheName}, #{inspect(config)}")
+              #GenServer.call(__MODULE__, {:create_cache, cacheName, config})
+              state = Gibreel.Registry.start(cacheName)
+              Logger.info("Registry state=#{inspect state}")
+              {:ok, pid} = Gibreel.start()
+              {state, Agent.get(pid, fn (s) -> {s, state} end)}
+            {:error, reason} ->
+              {:error, reason}
         end
     end
 
@@ -93,15 +132,21 @@ defmodule Gibreel do
     ########
     #Supervisor / OTP
     ########
+
+    def init(state) do
+      {:ok, state}
+    end
+
+    def start(), do: start_link([])
+
     def start_link([]) do
-      Logger.info("#{__MODULE__}.start_link([])")
-      Db.create()
-      Logger.info("#{__MODULE__}.start_link([]) created db")
-      res = Agent.start_link(fn -> Gibreel.Registry.start_process(__MODULE__) end)
-      Logger.info("#{__MODULE__}.start_link([]) started Agent for Gibreel.Registry.start_process(#{__MODULE__})=#{inspect res}")
+      :ok = Db.create()
+      Logger.info("#{__MODULE__}.start_link Db is ready")
+      {:ok, pid} = Agent.start_link(fn -> Gibreel.Registry.start_process(__MODULE__) end)
+      Logger.info("#{__MODULE__}.start_link Gibreel.Registry started #{__MODULE__} on pid=#{inspect pid}")
       res = Agent.start_link(fn -> Gibreel.Registry.start_process(Gibreel.Registry) end)
-      Logger.info("#{__MODULE__}.start_link([]) started registry #{inspect res}")
-      res
+      Logger.info("#{__MODULE__}.start_link started registry #{inspect res}")
+      GenServer.start_link(__MODULE__, %{})
     end
 
     @doc "Checks if the task has already executed"
@@ -122,20 +167,71 @@ defmodule Gibreel do
     #  send self(), state
     #end
 
-    def handle_call({:create_cache, cacheName, cacheConfig}, _from, state=%State{pids: pids}) do
+
+    def handle_call({:create_cache, cacheName, cacheConfig}, from, state=%State{pids: pids}) do
+      Logger.info("non_empty create_cache from=#{inspect from}")
+      Logger.info("non_empty create_cache state=#{inspect state}")
 	    case Db.find(cacheName) do
-            {:error, :no_cache} ->
-                Db.store(%CacheRecord{name: cacheName, config: cacheConfig})
-                {:ok, pid} = :g_cache_sup.start_cache(cacheName)
-                :erlang.monitor(:process, pid)
-                nPids = :dict.store(pid, cacheName, pids)
-                {:reply, :ok, %State{pids: nPids}}
-            {:ok, _} -> {:reply, {:error, :duplicated}, state}
-        end
+        {:error, :no_cache} ->
+            Db.store(%CacheRecord{name: cacheName, config: cacheConfig})
+            {:ok, pid} = :g_cache_sup.start_cache(cacheName)
+            :erlang.monitor(:process, pid)
+            nPids = :dict.store(pid, cacheName, pids)
+            {:reply, :ok, %State{pids: nPids}}
+        {:ok, _} ->
+          {:reply, {:error, :duplicated}, state}
+      end
     end
 
+
+    def handle_call({:create_cache, cacheName, cacheConfig}, from, state) do
+      Logger.info("create_cache from=#{inspect from}")
+      Logger.info("create_cache state=#{inspect state}")
+      case Db.find(cacheName) do
+        {:error, :no_cache} ->
+          Logger.info("cache miss for #{cacheName}")
+          Db.store(%CacheRecord{name: cacheName, config: cacheConfig})
+          {:ok, pid} = :g_cache_sup.start_cache(cacheName)
+          :erlang.monitor(:process, pid)
+          nPids = :dict.store(pid, cacheName, state)
+          {:reply, :ok, %State{pids: nPids}}
+        {:ok, _} -> {:reply, {:error, :duplicated}, :dict.new()}
+      end
+    end
+
+
+    def handle_call({:get_and_update, func}, _from, %{}) do
+      Logger.info("handle_call_get_and_update")
+      {:ok, pid} = Gibreel.Registry.start(Gibreel)
+      state = Agent.get(pid, & &1)
+      Logger.info("handle_call_get_and_update prev_state=#{inspect state}")
+      new_state = func.(state)
+      Logger.info("handle_call_get_and_update new_state=#{inspect new_state}")
+      {:reply, state, new_state}
+    end
+
+    def handle_call({:get, func}, _from, %{}) do
+      Logger.info("handle_call_get")
+      {:ok, pid} = Gibreel.Registry.start(Gibreel)
+      state = Agent.get(pid, & &1)
+      Logger.info("handle_call_get=#{inspect state}")
+      r = {:reply, state, state}
+      Logger.info("handle_call_get_res=#{inspect r}")
+      r
+    end
+
+    def handle_call({:update, func}, _from, %{}) do
+      Logger.info("handle_call update")
+      state = Gibreel.Registry.start(Gibreel)
+      Logger.info("handle_call update prev_state=#{inspect state}")
+      new_state = func.(state)
+      Logger.info("handle_call update new_state=#{inspect new_state}")
+      {:reply, new_state, new_state}
+    end
+
+
     def handle_call(msg, from, state) do
-      Logger.info("#{__MODULE__}.handle_call: unknown call: #{inspect msg} from=#{inspect from} and state=#{inspect(state)}")
+      Logger.info("#{__MODULE__}.handle_call: wat unknown call: #{inspect msg} from=#{inspect from} and state=#{inspect(state)}")
       {:reply, :unknown_call, state}
     end
 
@@ -172,7 +268,7 @@ defmodule Gibreel do
     end
 
     def handle_info(wat = {msg, _MonitorRef, process: pid}, state=%State{pids: pids}) do
-      Logger.info("#{__MODULE__} msg #{inspect wat}, #{msg}, #{inspect pid} #{inspect state}, pids=#{pids}")
+      Logger.info("#{__MODULE__} wat msg #{inspect wat}, #{msg}, #{inspect pid} #{inspect state}, pids=#{pids}")
     end
 
     def terminate(_Reason, _State) do
