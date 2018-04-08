@@ -3,10 +3,9 @@ defmodule GibReel.Mixfile do
 
   def project do
     [app: :gibreel,
-      version: "0.1.0",
-      language: :erlang,
+      version: "1.0.0",
       deps: deps(Mix.env()),
-      description: "Distributed cache implemented in Erlang",
+      description: "Distributed cache implemented in Elixir / Erlang",
       package: package(),
       source_url: "https://github.com/aruki-delivery/gibreel",
       homepage_url: "https://hex.pm/packages/gibreel"]
