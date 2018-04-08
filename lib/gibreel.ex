@@ -34,23 +34,14 @@ defmodule Gibreel do
       defstruct @fields
     end
 
-    def start_link(default) do
-      Logger.info("#{__MODULE__}.start_link(#{inspect default})")
-      Gibreel.Db.create()
-      GenServer.start_link(__MODULE__, default)
-    end
+    ### Functionality
 
-    def init(default) do
-      Logger.info("#{__MODULE__}.init(#{inspect default})")
-      {:ok, %State{pids: :dict.new()}}
-    end
-
+    
 
     def create_cache(cacheName), do: create_cache(cacheName, [])
     def create_cache(cacheName, options) do
         case create_cache_config(options) do
-            {:ok, config} ->
-                GenServer.call(__MODULE__, {:create_cache, cacheName, config})
+            {:ok, config} -> GenServer.call(__MODULE__, {:create_cache, cacheName, config})
             {:error, reason} -> {:error, reason}
         end
     end
@@ -97,6 +88,35 @@ defmodule Gibreel do
             {:error, no_cache} -> no_cache
         end
     end
+
+    ########
+    #Supervisor / OTP
+    ########
+    defp new_state, do: %State{pids: :dict.new()}
+    defp new_loop, do: loop(new_state())
+    def start_link(default) do
+      Logger.info("#{__MODULE__}.start_link(#{inspect default})")
+      Logger.info("#{__MODULE__}.calling Db.create()...")
+      Db.create()
+      Logger.info("#{__MODULE__}.calling Task.start_link(#{inspect new_loop()})...")
+      Task.start_link(new_loop())
+    end
+
+    def init(default) do
+      Logger.info("#{__MODULE__}.init(#{inspect default})")
+      {:ok, new_state()}
+    end
+
+    defp loop(state = %State{pids: pids}) do
+        Logger.info("#{__MODULE__}.loop(#{inspect state})")
+        receive do
+          {:get, pid, caller} ->
+            send caller, :dict.find(pid, pids)
+            loop(state)
+          {:put, pid, value} -> loop(:dict.put(pids, pid, value))
+        end
+      end
+    
 
     def handle_call({:create_cache, cacheName, cacheConfig}, _From, state=%State{pids: pids}) do
 	    case Db.find(cacheName) do
