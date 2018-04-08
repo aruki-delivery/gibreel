@@ -3,7 +3,7 @@ defmodule GibReel.Mixfile do
 
   def project do
     [app: :gibreel,
-      version: "1.0.0",
+      version: "1.1.0",
       deps: deps(Mix.env()),
       description: "Distributed cache implemented in Elixir / Erlang",
       package: package(),
@@ -16,6 +16,10 @@ defmodule GibReel.Mixfile do
      {:cclock, "~> 0.1.0"},
      {:async, "~> 0.1.0"},
       {:ex_doc, ">= 0.0.0", only: :dev}]
+  end
+  def application do
+    [mod: {Gibreel.Application, []},
+      extra_applications: [:logger, :columbo],]
   end
 
   def package do
