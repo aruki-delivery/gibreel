@@ -30,6 +30,16 @@ defmodule Gibreel.Registry do
     rg
   end
 
+  def start(gibreel_agent, config) do
+    Logger.info("#{__MODULE__}.start(#{inspect gibreel_agent}, #{inspect config})...")
+    case Agent.start_link(&Gibreel.empty_state/0, name: get_name(gibreel_agent)) do
+      {:ok, res} -> {:ok, res}
+      {:error, {:already_started, res}} ->
+        Logger.info("#{__MODULE__}.start(#{inspect gibreel_agent}) = skipping #{inspect res}")
+        {:ok, res}
+    end
+  end
+
   def start(gibreel_agent) do
     Logger.info("#{__MODULE__}.start(#{inspect gibreel_agent})...")
     case Agent.start_link(&Gibreel.empty_state/0, name: get_name(gibreel_agent)) do

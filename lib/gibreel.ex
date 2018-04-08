@@ -77,7 +77,7 @@ defmodule Gibreel do
             {:ok, config} ->
               #Logger.info("Calling GenServer for (#{cacheName}, #{inspect(config)}")
               #GenServer.call(__MODULE__, {:create_cache, cacheName, config})
-              state = Gibreel.Registry.start(cacheName)
+              state = Gibreel.Registry.start(cacheName, config)
               Logger.info("Registry state=#{inspect state}")
               {:ok, pid} = Gibreel.start()
               {state, Agent.get(pid, fn (s) -> {s, state} end)}
@@ -215,7 +215,8 @@ defmodule Gibreel do
       {:ok, pid} = Gibreel.Registry.start(Gibreel)
       state = Agent.get(pid, & &1)
       Logger.info("handle_call_get=#{inspect state}")
-      r = {:reply, state, state}
+      new_state = func.(state)
+      r = {:reply, state, new_state}
       Logger.info("handle_call_get_res=#{inspect r}")
       r
     end
