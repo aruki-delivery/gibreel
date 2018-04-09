@@ -1,7 +1,7 @@
 Expm.Package.new(
   name: "gibreel",
   description: "Distributed cache implemented in Erlang",
-  version: "4.0.0",
+  version: "4.0.1",
   keywords: ["elixir", "erlang", "distributed", "cache"],
   licenses: [[name: "Apache License 2.0"]],
   maintainers: [
