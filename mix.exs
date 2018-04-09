@@ -14,16 +14,11 @@ defmodule Gibreel.Mixfile do
 
   defp deps(_) do
   [
-     {:columbo, "~> 0.1.0"},
-     {:cclock, "~> 0.1.0"},
+     {:columbo, "~>1.0.0"},
+     {:cclock, "~> 1.0.0"},
      {:async, "~> 0.1.0"},
      {:ex_doc, ">= 0.0.0", only: :dev}]
   end
-
-  #def application do
-  #  [mod: {Gibreel.Application, []},
-  #    extra_applications: [:logger, :columbo],]
-  #end
 
   def package do
     [ maintainers: ["cblage"],
