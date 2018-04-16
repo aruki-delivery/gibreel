@@ -3,7 +3,8 @@ defmodule Gibreel.Mixfile do
 
   def project do
     [app: :gibreel,
-      version: "3.0.5",
+      version: "5.0.1",
+      language: :erlang,
       deps: deps(Mix.env()),
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [coveralls: :test],
@@ -14,11 +15,10 @@ defmodule Gibreel.Mixfile do
   end
 
   defp deps(_) do
-    [{:swarm, "~> 3.0"},
-     {:columbo, "~> 0.1.0"},
-     {:cclock, "~> 0.1.0"},
-     {:async, "~> 0.1.0"},
-     {:excoveralls, "~> 0.8", only: :test},
+  [
+     {:columbo, "~> 2.0.0"},
+     {:cclock, "~> 2.0.0"},
+     {:async, "~> 2.0.0"},
      {:ex_doc, ">= 0.0.0", only: :dev}]
   end
   def application do

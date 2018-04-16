@@ -1,8 +1,9 @@
 %{
-  "async": {:hex, :async, "0.1.0", "698b900694aac71a21c81eb9c38c7fb82139e14ce326c181560bf86ffd9c0105", [:mix], [], "hexpm"},
-  "cclock": {:hex, :cclock, "0.1.0", "85c21d05262c89d9e375ec1a4b211252a4e642cb258b77fe2626f6c6123e7e7a", [:mix], [{:columbo, "~> 0.1.0", [hex: :columbo, repo: "hexpm", optional: false]}], "hexpm"},
+  "async": {:hex, :async, "2.0.0", "14ec8a760223eb031d0da76b28df4f09349e898320c689c12ccee968481548f2", [:mix], [{:distillery, "~> 1.5", [hex: :distillery, repo: "hexpm", optional: false]}], "hexpm"},
+  "cclock": {:hex, :cclock, "2.0.0", "d55ac05e812cc1e034e4741d91c38e31229533c30989e0c4fd02dc1007962094", [:mix], [{:columbo, "~> 2.0", [hex: :columbo, repo: "hexpm", optional: false]}], "hexpm"},
   "certifi": {:hex, :certifi, "2.3.1", "d0f424232390bf47d82da8478022301c561cf6445b5b5fb6a84d49a9e76d2639", [:rebar3], [{:parse_trans, "3.2.0", [hex: :parse_trans, repo: "hexpm", optional: false]}], "hexpm"},
-  "columbo": {:hex, :columbo, "0.1.0", "ffa2ebcea3dd5a5fcb2786e6d89637e6ffae3899684b83433a663b4bb1f11d9a", [:mix], [], "hexpm"},
+  "columbo": {:hex, :columbo, "2.0.0", "fe6c006a640aacb5a7bf5cde7beeacccbb1f76d35bd301c266e79942ce68c057", [:mix], [], "hexpm"},
+  "distillery": {:hex, :distillery, "1.5.2", "eec18b2d37b55b0bcb670cf2bcf64228ed38ce8b046bb30a9b636a6f5a4c0080", [:mix], [], "hexpm"},
   "earmark": {:hex, :earmark, "1.2.5", "4d21980d5d2862a2e13ec3c49ad9ad783ffc7ca5769cf6ff891a4553fbaae761", [:mix], [], "hexpm"},
   "ex_doc": {:hex, :ex_doc, "0.18.3", "f4b0e4a2ec6f333dccf761838a4b253d75e11f714b85ae271c9ae361367897b7", [:mix], [{:earmark, "~> 1.1", [hex: :earmark, repo: "hexpm", optional: false]}], "hexpm"},
   "excoveralls": {:hex, :excoveralls, "0.8.1", "0bbf67f22c7dbf7503981d21a5eef5db8bbc3cb86e70d3798e8c802c74fa5e27", [:mix], [{:exjsx, ">= 3.0.0", [hex: :exjsx, repo: "hexpm", optional: false]}, {:hackney, ">= 0.12.0", [hex: :hackney, repo: "hexpm", optional: false]}], "hexpm"},
