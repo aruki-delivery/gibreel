@@ -3,7 +3,7 @@ defmodule Gibreel.Mixfile do
 
   def project do
     [app: :gibreel,
-      version: "5.0.1",
+      version: "6.0.0",
       language: :erlang,
       deps: deps(Mix.env()),
       test_coverage: [tool: ExCoveralls],
